@@ -59,37 +59,53 @@ def getuservideo(message):
     match dialogues.get(message.from_user.id):
         case 'Cut':
             print('Cut')
-            savevideo(message=message)
-            bot.send_message(message.chat.id, '''Хорошо, пришли мне таймкоды в таком формате:
+            try:
+                savevideo(message=message)
+                bot.send_message(message.chat.id, '''Хорошо, пришли мне таймкоды в таком формате:
 Начальный таймкод:Конечный таймкод (Если какой-то из таймкодов больше минуты, используйте секунды:\n1 минута 30 сек. :\n90)''')
+            except:
+                bot.send_message("Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?")
         case 'Speed':
-            savevideo(message=message)
-            bot.send_message(message.chat.id, '''Во сколько раз мне ускорить видео? Пришли мне число вот в таком формате:
+            try:
+                savevideo(message=message)
+                bot.send_message(message.chat.id, '''Во сколько раз мне ускорить видео? Пришли мне число вот в таком формате:
 Число''')
+            except:
+                bot.send_message("Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?") 
         case 'Concatenate':
             keyboard = tb.types.InlineKeyboardMarkup([[
-                tb.types.InlineKeyboardButton('Продолжить', callback_data='Continue')
+                tb.types.InlineKeyboardButton('Склеить', callback_data='Continue')
             ]])
-            savevideoformerging(message)
-            bot.send_message(message.chat.id, 'Дальше просто присылай мне свои видео для склейки', reply_markup=keyboard)
-            
+            try: 
+                savevideoformerging(message)
+                bot.send_message(message.chat.id, 'Дальше просто присылай мне свои видео для склейки', reply_markup=keyboard)
+            except:
+               bot.send_message("Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?") 
+ 
+
 @bot.message_handler(content_types=['text'])
 def getparams(message):
     match dialogues.get(message.from_user.id):
         case 'Cut':
-            from_, to = tuple(map(int, message.text.split(':')))
-            cropvideo(video=VideoFileClip(f'InputFiles/{message.from_user.id}.mp4'), startingtime=from_, endingtime=to, id=message.from_user.id)
-            bot.send_message(message.chat.id, 'Высылаю видео...')
-            bot.send_video(message.chat.id, video=open(f'OutputFiles/{message.from_user.id}.mp4', 'rb'))
+            try:
+                from_, to = tuple(map(int, message.text.split(':')))
+                cropvideo(video=VideoFileClip(f'InputFiles/{message.from_user.id}.mp4'), startingtime=from_, endingtime=to, id=message.from_user.id)
+                bot.send_message(message.chat.id, 'Высылаю видео...')
+                bot.send_video(message.chat.id, video=open(f'OutputFiles/{message.from_user.id}.mp4', 'rb'))
+            except:
+                bot.send_message(message.chat.id, "Что-то пошло не так при обработке видео :(")
         case 'Speed':
-            speed = int(message.text)
-            speedupvideo(video=VideoFileClip(f'InputFiles/{message.from_user.id}.mp4'), speed=speed, id=message.from_user.id)
-            bot.send_message(message.chat.id, 'Высылаю видео...')
-            bot.send_video(message.chat.id, video=open(f'OutputFiles/{message.from_user.id}.mp4', 'rb'))
-        
-    os.remove(f'InputFiles/{id}.mp4')
-    os.remove(f'OutputFiles/{id}.mp4')
-    del dialogues[id]
+            try:
+                speed = int(message.text)
+                speedupvideo(video=VideoFileClip(f'InputFiles/{message.from_user.id}.mp4'), speed=speed, id=message.from_user.id)
+                bot.send_message(message.chat.id, 'Высылаю видео...')
+                bot.send_video(message.chat.id, video=open(f'OutputFiles/{message.from_user.id}.mp4', 'rb'))
+            except:
+                bot.send_message(message.chat.id, "Что-то пошло не так при обработке видео :(")
+
+    os.remove(f'InputFiles/{message.from_user.id}.mp4')
+    os.remove(f'OutputFiles/{message.from_user.id}.mp4')
+    del dialogues[message.from_user.id]
 
 
 bot.polling()
