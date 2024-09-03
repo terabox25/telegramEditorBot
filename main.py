@@ -64,14 +64,14 @@ def getuservideo(message):
                 bot.send_message(message.chat.id, '''Хорошо, пришли мне таймкоды в таком формате:
 Начальный таймкод:Конечный таймкод (Если какой-то из таймкодов больше минуты, используйте секунды:\n1 минута 30 сек. :\n90)''')
             except:
-                bot.send_message("Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?")
+                bot.send_message(message.chat.id, "Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?")
         case 'Speed':
             try:
                 savevideo(message=message)
                 bot.send_message(message.chat.id, '''Во сколько раз мне ускорить видео? Пришли мне число вот в таком формате:
 Число''')
             except:
-                bot.send_message("Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?") 
+                bot.send_message(message.chat.id, "Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?") 
         case 'Concatenate':
             keyboard = tb.types.InlineKeyboardMarkup([[
                 tb.types.InlineKeyboardButton('Склеить', callback_data='Continue')
@@ -80,7 +80,7 @@ def getuservideo(message):
                 savevideoformerging(message)
                 bot.send_message(message.chat.id, 'Дальше просто присылай мне свои видео для склейки', reply_markup=keyboard)
             except:
-               bot.send_message("Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?") 
+               bot.send_message(message.chat.id, "Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?") 
  
 
 @bot.message_handler(content_types=['text'])
