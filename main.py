@@ -32,16 +32,6 @@ def savevideoformerging(message):
         file.write(downloaded_file)
         file.close()
 
-def cleanup(user_id):
-    # Clean up dialogues
-    dialogues.pop(user_id, None)
-    # Delete user-specific files
-    files = [file_ for file_ in os.listdir('InputFiles/') if str(user_id) in file_]
-    for file_ in files:
-        os.unlink('InputFiles/' + file_)
-    if os.path.exists(f'OutputFiles/{user_id}.mp4'):
-        os.unlink(f'OutputFiles/{user_id}.mp4')
-
 @bot.message_handler(commands=['start'])
 def start(message):
     keyboard = tb.types.InlineKeyboardMarkup([[
@@ -54,13 +44,12 @@ Please select an action''', reply_markup=keyboard)
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
-    # Clean up previous task if exists
-    cleanup(call.from_user.id)
-    
     if call.data == 'Continue':
         mergevideos(call.from_user.id)
         bot.send_video(call.from_user.id, video=open(f'OutputFiles/{call.from_user.id}.mp4', 'rb'))        
-        cleanup(call.from_user.id)
+        files = [file_ for file_ in os.listdir('InputFiles/') if str(call.from_user.id) in file_]
+        [os.unlink('InputFiles/' + file_) for file_ in files]
+        os.unlink(f'OutputFiles/{call.from_user.id}.mp4')
     else:
         dialogues[call.from_user.id] = call.data
         bot.send_message(call.from_user.id, 'Please send me your video')
@@ -114,7 +103,8 @@ def getparams(message):
             except:
                 bot.send_message(message.chat.id, "Something went wrong while processing the video :(")
 
-    # Clean up files after processing
-    cleanup(message.from_user.id)
+    os.remove(f'InputFiles/{message.from_user.id}.mp4')
+    os.remove(f'OutputFiles/{message.from_user.id}.mp4')
+    del dialogues[message.from_user.id]
 
 bot.polling()
