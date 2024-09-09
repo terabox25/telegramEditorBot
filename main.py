@@ -35,12 +35,12 @@ def savevideoformerging(message):
 @bot.message_handler(commands=['start'])
 def start(message):
     keyboard = tb.types.InlineKeyboardMarkup([[
-        tb.types.InlineKeyboardButton('Обрезать ✂️', callback_data='Cut'),
-        tb.types.InlineKeyboardButton('Ускорить ⏏️', callback_data='Speed'),
-        tb.types.InlineKeyboardButton('Склеить 🎞', callback_data='Concatenate')
+        tb.types.InlineKeyboardButton('Cut ✂️', callback_data='Cut'),
+        tb.types.InlineKeyboardButton('Speed Up ⏏️', callback_data='Speed'),
+        tb.types.InlineKeyboardButton('Merge 🎞', callback_data='Concatenate')
     ]])
-    bot.send_message(message.chat.id, '''Привет, я бот созданный для редактирования видеофайлов.
-Выбери действие''', reply_markup=keyboard)
+    bot.send_message(message.chat.id, '''Hello, I am a bot created for video editing.
+Please select an action''', reply_markup=keyboard)
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
@@ -52,7 +52,7 @@ def handle_callback(call):
         os.unlink(f'OutputFiles/{call.from_user.id}.mp4')
     else:
         dialogues[call.from_user.id] = call.data
-        bot.send_message(call.from_user.id, 'Пришли мне свое видео')
+        bot.send_message(call.from_user.id, 'Please send me your video')
 
 @bot.message_handler(content_types=['video'])
 def getuservideo(message):
@@ -61,26 +61,26 @@ def getuservideo(message):
             print('Cut')
             try:
                 savevideo(message=message)
-                bot.send_message(message.chat.id, '''Хорошо, пришли мне таймкоды в таком формате:
-Начальный таймкод:Конечный таймкод (Если какой-то из таймкодов больше минуты, используйте секунды:\n1 минута 30 сек. :\n90)''')
+                bot.send_message(message.chat.id, '''Great, now send me the timecodes in this format:
+Start Timecode:End Timecode (If any of the timecodes exceed one minute, use seconds:\n1 minute 30 sec. :\n90)''')
             except:
-                bot.send_message(message.chat.id, "Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?")
+                bot.send_message(message.chat.id, "Something went wrong while downloading the file. Maybe it is corrupted or exceeds 20MB?")
         case 'Speed':
             try:
                 savevideo(message=message)
-                bot.send_message(message.chat.id, '''Во сколько раз мне ускорить видео? Пришли мне число вот в таком формате:
-Число''')
+                bot.send_message(message.chat.id, '''How much faster should I speed up the video? Send me the number in this format:
+Number''')
             except:
-                bot.send_message(message.chat.id, "Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?") 
+                bot.send_message(message.chat.id, "Something went wrong while downloading the file. Maybe it is corrupted or exceeds 20MB?") 
         case 'Concatenate':
             keyboard = tb.types.InlineKeyboardMarkup([[
-                tb.types.InlineKeyboardButton('Склеить', callback_data='Continue')
+                tb.types.InlineKeyboardButton('Merge', callback_data='Continue')
             ]])
             try: 
                 savevideoformerging(message)
-                bot.send_message(message.chat.id, 'Дальше просто присылай мне свои видео для склейки', reply_markup=keyboard)
+                bot.send_message(message.chat.id, 'Now just send me your videos for merging', reply_markup=keyboard)
             except:
-               bot.send_message(message.chat.id, "Что-то пошло не так при скачивании файла. Возможно он поврежден или его размер привышает 20МБ?") 
+               bot.send_message(message.chat.id, "Something went wrong while downloading the file. Maybe it is corrupted or exceeds 20MB?") 
  
 
 @bot.message_handler(content_types=['text'])
@@ -90,22 +90,21 @@ def getparams(message):
             try:
                 from_, to = tuple(map(int, message.text.split(':')))
                 cropvideo(video=VideoFileClip(f'InputFiles/{message.from_user.id}.mp4'), startingtime=from_, endingtime=to, id=message.from_user.id)
-                bot.send_message(message.chat.id, 'Высылаю видео...')
+                bot.send_message(message.chat.id, 'Sending you the video...')
                 bot.send_video(message.chat.id, video=open(f'OutputFiles/{message.from_user.id}.mp4', 'rb'))
             except:
-                bot.send_message(message.chat.id, "Что-то пошло не так при обработке видео :(")
+                bot.send_message(message.chat.id, "Something went wrong while processing the video :(")
         case 'Speed':
             try:
                 speed = int(message.text)
                 speedupvideo(video=VideoFileClip(f'InputFiles/{message.from_user.id}.mp4'), speed=speed, id=message.from_user.id)
-                bot.send_message(message.chat.id, 'Высылаю видео...')
+                bot.send_message(message.chat.id, 'Sending you the video...')
                 bot.send_video(message.chat.id, video=open(f'OutputFiles/{message.from_user.id}.mp4', 'rb'))
             except:
-                bot.send_message(message.chat.id, "Что-то пошло не так при обработке видео :(")
+                bot.send_message(message.chat.id, "Something went wrong while processing the video :(")
 
     os.remove(f'InputFiles/{message.from_user.id}.mp4')
     os.remove(f'OutputFiles/{message.from_user.id}.mp4')
     del dialogues[message.from_user.id]
-
 
 bot.polling()
